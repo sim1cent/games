@@ -1,0 +1,19 @@
+Use "make" to compile
+raylib is a dependency
+
+--Blockpuzzle--
+Commands:
+    Move the piece: left and right arrow keys
+    Rotate the piece: up arrow key and right SHIFT key
+    Drop the piece: down arrow key and SPACE key
+    Hold the piece: C key
+    Reset the game: F4 key
+    Pause: Minimize the window
+
+--Minesweeper--
+Commands:
+    Left click on the cell to uncover it
+    Right click on the covered cell to flag it
+    Reset the game: F4 key
+Game parameters:
+    ./minesweeper <grid width> <grid height> <mines number>
