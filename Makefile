@@ -1,5 +1,5 @@
 CFLAGS = -O2
-LDFLAGS = -lraylib
+LDFLAGS = -lraylib -ldl -lpthread -lm
 
 a: blockpuzzle minesweeper
 

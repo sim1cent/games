@@ -5,6 +5,7 @@
 #include <stdio.h>
 
 #define CELL_SIZE 20
+#define NOOB_MODE
 
 typedef struct{
     bool is_uncovered   :1;
@@ -22,16 +23,16 @@ static inline void draw_grid();
 static inline void end_game();
 
 static Cell *grid;
-static Texture2D mine_texture,flag_texture;
+static Texture2D mine_texture,flag_texture,block_texture;
 static uint grid_width,grid_height,mines_n,flagged_n,remaining_cells;
 static bool first_move,game_over;
 
 static inline void init_stuff(){
     InitWindow(grid_width*CELL_SIZE, grid_height*CELL_SIZE, "Minesweeper");
-    Image flag_image, mine_image;
-    mine_image = LoadImage("assets/mine.png");          flag_image = LoadImage("assets/flag.png");
-    ImageResize(&mine_image,CELL_SIZE,CELL_SIZE);       ImageResize(&flag_image,CELL_SIZE,CELL_SIZE);
-    mine_texture = LoadTextureFromImage(mine_image);    flag_texture = LoadTextureFromImage(flag_image);
+    Image flag_image, mine_image,block_image;
+    mine_image = LoadImage("assets/mine.png");     flag_image = LoadImage("assets/flag.png");    block_image=LoadImage("assets/block.png");
+    ImageResize(&mine_image,CELL_SIZE,CELL_SIZE);    ImageResize(&flag_image,CELL_SIZE,CELL_SIZE);    ImageResize(&block_image,CELL_SIZE,CELL_SIZE);
+    mine_texture = LoadTextureFromImage(mine_image);    flag_texture = LoadTextureFromImage(flag_image);    block_texture=LoadTextureFromImage(block_image);
     UnloadImage(mine_image);                            UnloadImage(flag_image);
 }
 
@@ -41,7 +42,7 @@ static inline void init_game(){
     flagged_n=0;
     first_move=true;
     game_over=false;
-    puts("--NEW GAME--");
+    fputs("\n--NEW GAME--",stderr);
 }
 
 #define grid(x,y) (grid[(y)*grid_width+(x)])
@@ -71,7 +72,7 @@ static inline void game_loop(){
                     grid(cell_x,cell_y).is_flagged=true;
                     ++flagged_n;
                 }
-                printf("Mines to flag: %d\n",mines_n-flagged_n);
+                fprintf(stderr,"\r\033[KMines to flag: %d",mines_n-flagged_n);
             }
         }
         if(IsKeyPressed(KEY_F4))
@@ -112,6 +113,7 @@ static void uncover_cells(int x, int y){
         return;
     else if(grid(x,y).is_mine){
         game_over=true;
+        fputs("\r\033[K--GAME OVER--",stderr);
         return;
     }
     if(first_move){
@@ -131,11 +133,13 @@ static void uncover_cells(int x, int y){
 }
 
 static inline void draw_grid(){
-    for(uint i1=0; i1<grid_width; ++i1){
-        for(uint i2=0; i2<grid_height; ++i2){
+    for(int i1=0; i1<grid_width; ++i1){
+        for(int i2=0; i2<grid_height; ++i2){
             if(grid(i1,i2).is_uncovered||game_over){
-                if(grid(i1,i2).is_mine)
+                if(grid(i1,i2).is_mine){
                     DrawTexture(mine_texture,i1*CELL_SIZE, i2*CELL_SIZE, WHITE);
+                    DrawRectangleLines(i1*CELL_SIZE, i2*CELL_SIZE, CELL_SIZE, CELL_SIZE, DARKGRAY);
+                }
                 else{
                     uint n = get_num(i1,i2);
                     if (n>0){
@@ -144,14 +148,24 @@ static inline void draw_grid(){
                         sprintf(num,"%u",n%9);
                         DrawText(num, i1*CELL_SIZE+CELL_SIZE/(n==1?3:4), i2*CELL_SIZE+CELL_SIZE/20, CELL_SIZE, num_colors[n-1]);
                     }
+                    uint flag_num=0;
+#ifdef NOOB_MODE
+                    for(int i=i1-1; i<=i1+1; ++i){
+                        for(int j=i2-1; j<=i2+1; ++j){
+                            if(!(i<0||j<0||i>=grid_width||j>=grid_height)&&grid(i,j).is_flagged)
+                                ++flag_num;
+                        }
+                    }
+#endif
+                    DrawRectangleLines(i1*CELL_SIZE, i2*CELL_SIZE, CELL_SIZE, CELL_SIZE, ((flag_num>n&&!game_over)?RED:DARKGRAY));
                 }
             }
             else{
-                DrawRectangle(i1*CELL_SIZE, i2*CELL_SIZE, CELL_SIZE, CELL_SIZE, GRAY);
+                DrawTexture(block_texture,i1*CELL_SIZE,i2*CELL_SIZE, BLUE);
                 if(grid(i1,i2).is_flagged||remaining_cells==0)
                     DrawTexture(flag_texture,i1*CELL_SIZE, i2*CELL_SIZE, (remaining_cells==0?LIGHTGRAY:WHITE));
+                DrawRectangleLines(i1*CELL_SIZE, i2*CELL_SIZE, CELL_SIZE, CELL_SIZE, DARKGRAY);
             }
-            DrawRectangleLines(i1*CELL_SIZE, i2*CELL_SIZE, CELL_SIZE, CELL_SIZE, DARKGRAY);
         }
     }
 }
