@@ -29,11 +29,11 @@ static bool first_move,game_over;
 
 static inline void init_stuff(){
     InitWindow(grid_width*CELL_SIZE, grid_height*CELL_SIZE, "Minesweeper");
-    Image flag_image, mine_image,block_image;
-    mine_image = LoadImage("assets/mine.png");     flag_image = LoadImage("assets/flag.png");    block_image=LoadImage("assets/block.png");
-    ImageResize(&mine_image,CELL_SIZE,CELL_SIZE);    ImageResize(&flag_image,CELL_SIZE,CELL_SIZE);    ImageResize(&block_image,CELL_SIZE,CELL_SIZE);
-    mine_texture = LoadTextureFromImage(mine_image);    flag_texture = LoadTextureFromImage(flag_image);    block_texture=LoadTextureFromImage(block_image);
-    UnloadImage(mine_image);                            UnloadImage(flag_image);
+    Image flag_image,mine_image,block_image;
+    mine_image = LoadImage("assets/mine.png");  flag_image = LoadImage("assets/flag.png");  block_image=LoadImage("assets/block.png");
+    ImageResize(&mine_image,CELL_SIZE,CELL_SIZE);  ImageResize(&flag_image,CELL_SIZE,CELL_SIZE);  ImageResize(&block_image,CELL_SIZE,CELL_SIZE);
+    mine_texture=LoadTextureFromImage(mine_image);  flag_texture=LoadTextureFromImage(flag_image);  block_texture=LoadTextureFromImage(block_image);
+    UnloadImage(mine_image);  UnloadImage(flag_image);  UnloadImage(block_image);
 }
 
 static inline void init_game(){
@@ -176,12 +176,12 @@ static inline void end_game(){
     CloseWindow();
 }
 
-#define get_arg(a, b) (argc>=(a)?atoi(argv[(a)-1]):(b))
+#define get_arg(a, b) (argc>(a)?atoi(argv[(a)]):(b))
 #define assert(x) if(!(x)){ fputs("Invalid parameters\n",stderr); exit(1); }
 int main(int argc, char **argv){
-    grid_width=get_arg(2,9);
-    grid_height=get_arg(3,9);
-    mines_n=get_arg(4,10);
+    grid_width=get_arg(1,9);
+    grid_height=get_arg(2,9);
+    mines_n=get_arg(3,10);
     assert(grid_width<=30&&grid_height<=30&&mines_n<(grid_width*grid_height));
     assert(grid_width>=4&&grid_height>=4&&mines_n>0);
     init_stuff();
